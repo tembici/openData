@@ -12,7 +12,6 @@ initial_date <- floor_date(full.date, "month")
 ############### BIGQUERY ACCESS ##############
 ##############################################
 
-install.packages("bigrquery")
 library(bigrquery)
 
 bigrquery::bq_auth()
@@ -21,10 +20,6 @@ project_id <- config$project_id
 
 ############## String Libraries ##############
 
-install.packages("readr")
-install.packages("glue")
-
-library(readr)
 library("glue")
 
 ##############################################
@@ -86,6 +81,30 @@ writeCSVFile <- function(path, result, project) {
   print(glue("{project} concluído! Salvo em {filename}"))
 }
 
+uploadToDrive <- function(filename, project) {
+  folder <- switch(
+    project,
+    "BikeRio" = 'Rio de Janeiro',
+    "BikeSampa" = 'BikeSampa',
+    "BikeSSA" = 'Salvador',
+    "BikePE" = 'Recife',
+    "BikeBSB" = 'Brasilia',
+    "BikeVV" = 'Vila Velha',
+    "BikeSantiago" = 'Santiago',
+    "BikePoa" = 'Porto Alegre',
+    "BAEcobici" = 'Buenos Aires',
+    "riviera" = 'Riviera'
+  )
+
+  print("Fazendo upload para o Google Drive...")
+
+  folder_in_drive <- googledrive::drive_find(pattern = folder, team_drive = "OpenData", type = "folder")
+
+  googledrive::drive_upload(media = filename, path = folder_in_drive)
+
+  print(glue("{project} finalizado."))
+}
+
 for (project in projects) {
   query <- makeQuery(project)
 
@@ -94,5 +113,7 @@ for (project in projects) {
   result <- bigrquery::query_exec(query, project_id, use_legacy_sql = FALSE)
 
   writeCSVFile(path, result, project)
+
+  uploadToDrive(filename, project)
 }
 
