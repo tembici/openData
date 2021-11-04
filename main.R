@@ -116,4 +116,3 @@ for (project in projects) {
 
   uploadToDrive(filename, project)
 }
-
