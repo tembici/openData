@@ -18,6 +18,8 @@ bigrquery::bq_auth()
 
 project_id <- config$project_id
 
+path 
+
 ############## String Libraries ##############
 
 library("glue")
@@ -55,7 +57,7 @@ makeQuery <- function(project) {
     FROM
       DM_BUSINESS.obt_trips t
     LEFT JOIN
-      data_analytics_base.OBT_CUSTOMERS_SENSIBLE c
+      DM_SENSIBLE.obt_customers_sensible c
     ON
       t.customer_id = c.customer_id
     WHERE DATE_TRUNC(DATE(t.start_time), MONTH) = DATE_TRUNC(DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 MONTH), MONTH)
@@ -79,6 +81,8 @@ writeCSVFile <- function(path, result, project) {
   write.csv(result, filename, row.names = FALSE)
 
   print(glue("{project} concluído! Salvo em {filename}"))
+  
+  filename
 }
 
 uploadToDrive <- function(filename, project) {
@@ -87,7 +91,7 @@ uploadToDrive <- function(filename, project) {
     "BikeRio" = 'Rio de Janeiro',
     "BikeSampa" = 'BikeSampa',
     "BikeSSA" = 'Salvador',
-    "BikePE" = 'Recife',
+    "BikePE" = 'Pernambuco',
     "BikeBSB" = 'Brasilia',
     "BikeVV" = 'Vila Velha',
     "BikeSantiago" = 'Santiago',
@@ -112,7 +116,7 @@ for (project in projects) {
 
   result <- bigrquery::query_exec(query, project_id, use_legacy_sql = FALSE)
 
-  writeCSVFile(path, result, project)
+  filename <- writeCSVFile(path, result, project)
 
   uploadToDrive(filename, project)
 }
